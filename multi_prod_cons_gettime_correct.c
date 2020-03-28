@@ -14,7 +14,7 @@
  *
  *	Revised	:
  */
-
+//mean of times must be added 
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
