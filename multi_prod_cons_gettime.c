@@ -111,7 +111,7 @@ void *producer (void *q)
     item->work = &my_function;
     printf("producer add %d \n",i);
     gettimeofday(&tv,NULL);
-    *x = tv.tv_usec/1000 +tv.tv_sec*1000 ;
+    *x = tv.tv_usec/1000 +tv.tv_sec*1000 ;//incorrect
     item->arg = (void *) x;
     queueAdd (fifo,item);
     pthread_mutex_unlock (fifo->mut);
