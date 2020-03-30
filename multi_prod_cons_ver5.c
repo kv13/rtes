@@ -84,7 +84,7 @@ int main ()
   }
 
   
-  //the program has finished now I add this section  to 
+  //the program has finished. I add this section  to 
   //save the timestamps, compute the mean and add it to 
   //a file called means.
   printf("COUNTER = %d \n",Counter);
