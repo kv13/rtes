@@ -114,7 +114,7 @@ void *producer (void *q)
   //a  producer thread tries to put to the queue LOOP elements
   //if queue is full the thread executes the pthread_cond_wait and wait a
   //consumer to delete an element and then add there a new element.When
-  //all items are added the thread finishes.
+  //all items are added the thread is finished.
   for (i = 0; i < LOOP; i++) {
     pthread_mutex_lock (fifo->mut);
     while (fifo->full) {
