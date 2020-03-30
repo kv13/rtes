@@ -74,7 +74,7 @@ int main ()
     pthread_create (&con[i], &attr, consumer, fifo);
   }
 
-  //wait threads to finish and then continue the main program
+  //wait for threads to finish and then continue the main program
   pthread_attr_destroy(&attr);
   for(i=0;i<p;i++){
      pthread_join (pro[i], NULL);
