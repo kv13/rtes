@@ -53,7 +53,7 @@ int main ()
   int q=CONSUMERS;
   int i;
 
-  //define the threads and initialize the atrribute
+  //define the threads and initialize the attribute
   pthread_t pro[p], con[q];
   pthread_attr_t attr;
   pthread_attr_init(&attr);
