@@ -10,7 +10,7 @@
 #define PRODUCERS 1
 #define CONSUMERS 36
 
-//some variables to store the times.
+// variables to store the timestamps.
 int Counter = 0 ; 
 long int  results_times[LOOP*PRODUCERS];
 
