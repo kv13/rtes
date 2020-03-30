@@ -122,7 +122,7 @@ void *producer (void *q)
       pthread_cond_wait (fifo->notFull, fifo->mut);
     }
 
-    //define some variables.
+    //define variables.
     struct timeval tv;
     workFunction *item;
     long int *x;
@@ -136,7 +136,7 @@ void *producer (void *q)
     if( r%2 == 0 ) item->work = &my_function_2;
     else item->work = &my_function_1;
 
-    //compute the time that the element is added to the queue.
+    //store the time when the element is added to the queue.
     gettimeofday(&tv,NULL);
     *x = tv.tv_usec+tv.tv_sec*1000000;
     item->arg = (void *) x;
