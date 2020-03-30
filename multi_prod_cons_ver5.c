@@ -147,7 +147,7 @@ void *producer (void *q)
     pthread_cond_signal (fifo->notEmpty);
   }
 
-  //the producer has finished  and now return.
+  //the producer has finished and returns.
   //the mutex locks the queue because we need to reduce the number of producers
   pthread_mutex_lock(fifo->mut);
   queueReduceProducers(fifo);
