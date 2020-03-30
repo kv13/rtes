@@ -17,7 +17,7 @@ long int  results_times[LOOP*PRODUCERS];
 void *producer (void *args);
 void *consumer (void *args);
 
-//first define the structs we need
+//first define the structs
 typedef struct {
   void * (*work)(void *);
   void * arg;
