@@ -158,7 +158,7 @@ void *producer (void *q)
 
 void *consumer (void *q)
 {
-  //define the variables that we will need.
+  //define the variables.
   queue *fifo= (queue *)q;
   workFunction d;
 
@@ -167,12 +167,12 @@ void *consumer (void *q)
   void  *result;
   int i;
 
-  //consumer runs until the queue is empty and there are no other producer
+  //consumer runs until the queue is empty and there are no other producers
   //to add an element to the queue.
   while(1) {
     pthread_mutex_lock (fifo->mut);
 
-    //if queue is empty but there is producers to add items then the consumer will wait 
+    //if queue is empty but there are producers to add items then the consumer will wait 
     //for an item to be added
     while (fifo->empty && fifo->num_prods>0) {
       printf ("consumer: queue EMPTY.\n");
@@ -182,7 +182,7 @@ void *consumer (void *q)
     //if the queue is not empty the consumer can delete an item
     if(fifo->empty!=1 ){
 
-      //take the item and keep the time.
+      //compute the time until the consumer takes the item from the queue
       queueDel (fifo, &d);
       gettimeofday(&tv_con , NULL);
       temp = tv_con.tv_sec*1000000 + tv_con.tv_usec;
@@ -199,7 +199,7 @@ void *consumer (void *q)
       results_times[Counter] = *(long int *)d.arg;
       Counter++;
     }
-    //if the queue is empty and there are no producers to add items to queue then
+    //if the queue is empty and there are no producers to add items to the queue then
     //the consumer has no point to continue working.
     else if(fifo->empty ==1 && fifo->num_prods == 0){
       break;
@@ -207,7 +207,7 @@ void *consumer (void *q)
   }
   pthread_mutex_unlock (fifo->mut);
 
-  //the consumer has finished and so we reduce the number of consumers before exit.
+  //Since the consumer has finished, we reduce the number of consumers.
   pthread_mutex_lock(fifo->mut);
   queueReduceConsumers(fifo);
   pthread_mutex_unlock(fifo->mut);
@@ -299,7 +299,7 @@ double results(){
   FILE *fp;
   char str[30];
 
-  //save the timestamps to a file because we will need to analyze them
+  //save the timestamps in order to analyze them
   int x = sprintf(str,"resultsPROD=%dCONS=%d.txt",PRODUCERS,CONSUMERS);
   fp=fopen(str,"a");
 
