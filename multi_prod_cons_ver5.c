@@ -320,7 +320,7 @@ double results(){
 
 
 
-//these are 2 simple functions
+//2 simple functions
 void * my_function_1(void *arg)
 {
   long int k = *(long int *)arg;
