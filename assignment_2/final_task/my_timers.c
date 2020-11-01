@@ -1,10 +1,8 @@
-//In this first implementation i will have only one timer. 
+//In this first implementation i will have only one timer.
 //Many timers will be implemented later.
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-
-//maybe useless includes
 #include <unistd.h>
 #include <sys/time.h>
 
@@ -40,7 +38,7 @@ typedef struct{
 }timer;
 
 typedef struct{
-	workFunction buf[QUEUESIZE];	
+	workFunction buf[QUEUESIZE];
 	long head,tail;
 	int full,empty;
 	int prods_finish, prods_counter;
@@ -71,27 +69,28 @@ int main(){
 	t1.period = 1;
 	t1.taskstoexecute = 10;
 	t1.startdelay = 100;
+	t1.userdata  = 1000;
 
-	//create and initialize the timer.	
+	//create and initialize the timer.
 	timer *timer_1;
 	timer_1 = (timer *)malloc(sizeof(timer));
 	timer_1->StartFcn = &StartFunction;
 	timer_1->StartFcn((void *)timer_1,(void* )&t1);
-	//printf("%d,%d,%d \n",timer_1->Period,timer_1->TasksToExecute,timer_1->StartDelay);			
-	
+
 	//create threads
 	pthread_t prods[NUMPRODUCERS];
 	pthread_t  cons[NUMCONSUMERS];
 	//later i will add the attribute joinable etc.
-	//start threads	
+	//start threads
 	pthread_create(&prods[0],NULL,producer,timer_1);
 	int i;
 	for(i=0;i<NUMCONSUMERS;i++){
 		pthread_create(&cons[i],NULL,consumer,fifo)
 	}
-	
+
 	//wait to finish the producer
 	pthread_join(prod[0],NULL);
+
 	//wait for consumers to finish
 	for(i=0;i<NUMCONSUMERS;i++){
 		pthread_join(cons[i],NULL);
@@ -115,9 +114,9 @@ void StartFunction(void *t,void *args){
 	temp->functions_struct = (workFunction *)malloc(sizeof(workFunction));
 	temp->funcion_struct->TimerFcn = &TimerFunction;
 	temp->function_struct->userData = (void *)malloc(sizeof(int));
-	temp->function_struct->*userData = temp->userdata;
-	
-}	
+	temp->function_struct->*userData = temp_1->userdata;
+
+}
 
 void TimerFunction(void *args){
 	int i,counter,sum;
@@ -126,7 +125,7 @@ void TimerFunction(void *args){
 	printf("Inside the Timer Function \n");
 	for(counter = 0;counter<i;counter ++){
 		sum = sum + counter;
-	}	
+	}
 	printf("the total sum is %d \n",sum);
 }
 
@@ -137,22 +136,22 @@ queue *queueInit(void){
 	if (q==NULL) return NULL;
 	q->prods_finish=0;
  	q->prods_counter=NUMPRODS;
-  	q->cons_finish=0;
+  q->cons_finish=0;
 	q->cons_counter=NUMCONS;
-  	q->head = 0;
-  	q->tail = 0;
-  	q->full = 0;
-  	q->empty = 1;
+  q->head = 0;
+  q->tail = 0;
+  q->full = 0;
+  q->empty = 1;
 
-  	q->mut = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
-  	q->notFull = (pthread_cond_t *)malloc(sizeof(pthread_cond_t));
-  	q->notEmpty = (pthread_cond_t *)malloc(sizeof(pthread_cond_t));
+  q->mut = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+  q->notFull = (pthread_cond_t *)malloc(sizeof(pthread_cond_t));
+  q->notEmpty = (pthread_cond_t *)malloc(sizeof(pthread_cond_t));
 
-  	pthread_mutex_init(q->mut,NULL);
-  	pthread_cond_init(q->notFull,NULL);
-  	pthread_cond_init(q->notEmpty,NULL);
+  pthread_mutex_init(q->mut,NULL);
+  pthread_cond_init(q->notFull,NULL);
+  pthread_cond_init(q->notEmpty,NULL);
 
-  	return q;
+  return q;
 }
 
 
@@ -180,13 +179,13 @@ void queueAdd(queue *q, workFunction i){
 }
 void queueDel(queue *q, workFunction *out){
 	*out = q->buf[q->head];
-  	q->head++;
-  	if(q->head == QUEUESIZE){
-    		q->head =0;
-  	}
-  	if(q->head == q->tail){
-    		q->empty =1;
-  	}
-  	q->full = 0;
- 	return ;
-
+  q->head++;
+	if(q->head == QUEUESIZE){
+		q->head =0;
+	}
+	if(q->head == q->tail){
+		q->empty =1;
+	}
+	q->full = 0;
+	return ;
+}
