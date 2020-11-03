@@ -43,9 +43,9 @@ typedef struct{
   int TasksToExecute;
   int StartDelay;
   void (*StartFcn)(void *arg);
-  void (*StopFcn)(void *arg);
   void (*TimerFcn)(void *arg);
   void (*ErrorFcn)(queue *q);
+  void (*StopFcn)(void);
   void *userData;
 
   queue *Queue;
@@ -54,12 +54,12 @@ typedef struct{
 }timer;
 
 
-void timer_init(timer *t, int period, int taskstoexecute, int startdelay,queue *q);
+void timer_init(timer *t, int period, int taskstoexecute,int userdata, int startdelay,queue *q);
 void start(timer *t);
 void startat(timer *t, int year, int month, int day, int hour, int min, int sec);
 void stop_function();
 void error_function(queue *q);
-void my_function();
+void my_function(void *arg);
 
 
 int main(){
@@ -89,7 +89,8 @@ int main(){
     //int period = 0.01;
 
     int TasksToExecute = 3600/period;
-    timer_init(Timer, period, TasksToExecute, 0, Queue);
+    int userdata = rand()%100+1;
+    timer_init(Timer, period, TasksToExecute, userdata, 0, Queue);
     start(Timer);
     //startat(Timer,2020,11,2,22,0,0);
 
@@ -106,9 +107,12 @@ int main(){
     int TasksToExecute_0 = 3600/period_0;
     int TasksToExecute_1 = 3600/period_1;
     int TasksToExecute_2 = 3600/period_2;
-    timer_init(&Timer[0], period_0, TasksToExecute_0, 0, Queue);
-    timer_init(&Timer[1], period_1, TasksToExecute_1, 0, Queue);
-    timer_init(&Timer[2], period_2, TasksToExecute_2, 0, Queue);
+    int userdata_0 = rand()%100+1;
+    int userdata_1 = rand()%100+1;
+    int userdata_2 = rand()%100+1;
+    timer_init(&Timer[0], period_0, TasksToExecute_0, userdata_0, 0, Queue);
+    timer_init(&Timer[1], period_1, TasksToExecute_1, userdata_1, 0, Queue);
+    timer_init(&Timer[2], period_2, TasksToExecute_2, userdata_2, 0, Queue);
     start(&Timer[2]);
     start(&Timer[1]);
     start(&Timer[0]);
@@ -144,30 +148,48 @@ int main(){
 
 //   THREAD'S FUNCTIONS
 void *producer(void *args){
-  return NULL;
+  timer *t;
+  t = (timer *)args;
+  fprintf(stdout,"PRODUCER: inside the thread producer....\n");
+  sleep(t->StartDelay);
+  for(int i=0;i<t->TasksToExecute;i++){
+    printf("USERDATA %d \n",*(int *)t->userData);
+  }
 }
 void *consumer(void *args){
+  queue *Queue;
+  Queue = (queue *)args;
+  fprintf(stdout,"CONSUMER:inside the thread consumer....\n");
+  pthread_mutex_lock(Queue->mut);
+  pthread_cond_wait(Queue->notEmpty,Queue->mut);
+  pthread_mutex_unlock(Queue->mut);
   return NULL;
+
 }
 
 
 //TIMER'S FUNCTIONS
-void timer_init(timer *t, int period, int taskstoexecute, int startdelay,queue *q){
+void timer_init(timer *t, int period, int taskstoexecute, int userdata, int startdelay,queue *q){
   t->Period = period;
   t->TasksToExecute = taskstoexecute;
   t->StartDelay = 0;
   t->Queue = q;
+  t->producer = &producer;
   t->StartFcn = NULL;
   t->StopFcn = &stop_function;
   t->TimerFcn = &my_function;
   t->ErrorFcn = &error_function;
-  t->userData = NULL;
+  t->userData = malloc(sizeof(int));
+  if(t->userData == NULL){
+    fprintf(stderr,"TIMER INITIALIZATION: Cannot create the timer object... EXITING \n");
+    exit(1);
+  }
+  *(int*)t->userData=userdata;
 }
 
 
 void start(timer *t){
-  usleep(t->StartDelay*1000000);
-  pthread_create(&t->thread_id,NULL,*t->producer,t->userData);
+  pthread_create(&t->thread_id,NULL,t->producer,(void *)t);
 }
 
 
@@ -180,7 +202,7 @@ void startat(timer *t, int year, int month, int day, int hour, int min, int sec)
   long long int seconds_fut = (year-1970)*365*24*3600+(month-1)*30*24*3600+day*24*3600+hour*3600+min*60+sec;
   long long int delay = seconds_fut-seconds_now;
   t->StartDelay = (int)delay;
-  start(t);
+  pthread_create(&t->thread_id,NULL,*t->producer,(void *)t);
 }
 
 
@@ -194,7 +216,7 @@ void stop_function(){
 }
 
 
-void my_function(){
+void my_function(void *arg){
   fprintf(stdout,"For now just print a message \n");
 }
 
@@ -206,8 +228,10 @@ queue *queueInit(void){
 	if (q==NULL) return NULL;
   q->buf = (workFunction *)malloc(sizeof(workFunction)*QUEUESIZE);
   if(q->buf == NULL) return NULL;
-	q->prods_finish=0;
- 	q->prods_counter=NUMTIMERS;
+	q->prods_finish = 0;
+ 	q->prods_counter = NUMTIMERS;
+  q->cons_counter = NUMCONSUMERS;
+  q->cons_finish = 0;
   q->head = 0;
   q->tail = 0;
   q->full = 0;
@@ -222,7 +246,7 @@ queue *queueInit(void){
   pthread_cond_init(q->notFull,NULL);
   pthread_cond_init(q->notEmpty,NULL);
 
-  	return q;
+  return q;
 }
 
 
