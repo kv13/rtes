@@ -59,7 +59,6 @@ void startat(timer *t, int year, int month, int day, int hour, int min, int sec)
 void error_function(queue *q){
   q->missing_jobs++;
   printf("***************************FUCK*************************\n");
-  usleep(2000000);
 }
 
 
@@ -75,7 +74,7 @@ void writeFile(char *str, int *array,int size){
   fp = fopen(str,"a+");
 
   if( fp == NULL ){
-    //fprintf(stderr,"ERROR: Cannot open files...EXITING\n");
+    fprintf(stderr,"ERROR: Cannot open files...EXITING\n");
     exit(1);
   }
 
