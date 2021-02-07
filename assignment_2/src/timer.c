@@ -58,7 +58,6 @@ void startat(timer *t, int year, int month, int day, int hour, int min, int sec)
 //error function
 void error_function(queue *q){
   q->missing_jobs++;
-  printf("***************************FUCK*************************\n");
 }
 
 
