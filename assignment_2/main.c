@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <math.h>
 
 #include "inc/queue.h"
 #include "inc/timer.h"
@@ -51,12 +52,12 @@ int main(){
     }
 
     //periods in useconds
-    //int period = 1000000;
+    int period = 1000000;
     //int period = 100000;
-    int period = 10000;
+    //int period = 10000;
 
-    //int TasksToExecute = 3600*(1000000/period);
-    int TasksToExecute = 100;
+    int TasksToExecute = 3600*(1000000/period);
+    //int TasksToExecute = 100;
 
     //calculate waiting times in queue for every task
     Waiting_times = (int*)malloc(sizeof(int)*TasksToExecute);
@@ -79,13 +80,13 @@ int main(){
     int period_1 = 100000;
     int period_2 = 10000;
 
-    //int TasksToExecute_0 = 3600*(1000000/period_0);
-    //int TasksToExecute_1 = 3600*(1000000/period_1);
-    //int TasksToExecute_2 = 3600*(1000000/period_2);
+    int TasksToExecute_0 = 3600*(1000000/period_0);
+    int TasksToExecute_1 = 3600*(1000000/period_1);
+    int TasksToExecute_2 = 3600*(1000000/period_2);
 
-    int TasksToExecute_0 = 100;
-    int TasksToExecute_1 = 1000;
-    int TasksToExecute_2 = 1000;
+    //int TasksToExecute_0 = 100;
+    //int TasksToExecute_1 = 1000;
+    //int TasksToExecute_2 = 1000;
 
     int TasksToExecute = TasksToExecute_0+TasksToExecute_1+TasksToExecute_2;
 
@@ -230,16 +231,17 @@ void *producer(void *args){
   int *sleep_times;                              //sleep times
   int *execution_times;                          //times between two executions. Must be close to Period
   int *producer_times;                           //times for the producer to put the items in the queue
-
+  int *drifting_times;                           //drifting times.
   //timer object
   timer *t;
   t = (timer *)args;
   int    usec_to_sleep=t->Period;
 
   //initialize time arrays
-  sleep_times     = (int *)malloc(sizeof(int)*t->TasksToExecute);
+  sleep_times      = (int *)malloc(sizeof(int)*t->TasksToExecute);
   producer_times   = (int *)malloc(sizeof(int)*t->TasksToExecute);
-  execution_times = (int *)malloc(sizeof(int)*t->TasksToExecute);
+  execution_times  = (int *)malloc(sizeof(int)*t->TasksToExecute);
+  drifting_times   = (int *)malloc(sizeof(int)*t->TasksToExecute);
 
   if(sleep_times == NULL || execution_times == NULL ){
     fprintf(stderr,"ERROR: Cannot allocate memory for array...===>EXITING\n");
@@ -287,10 +289,10 @@ void *producer(void *args){
     if(i==0){
 
       sleep_times[0]= t->Period;
-      execution_times[0]=0;
-      producer_times[0] = 1000000*(prod_time_2.tv_sec - prod_time_producer.tv_sec);
-      producer_times[0] = producer_times[0] + prod_time_2.tv_usec - prod_time_producer.tv_usec;
-
+      execution_times[0] = 0;
+      drifting_times[0]  = 0;
+      producer_times[0]  = 1000000*(prod_time_2.tv_sec - prod_time_producer.tv_sec);
+      producer_times[0]  = producer_times[0] + prod_time_2.tv_usec - prod_time_producer.tv_usec;
       usleep(t->Period);
     }
     else{
@@ -298,12 +300,13 @@ void *producer(void *args){
       delay_sec          = prod_time_1.tv_sec - prod_time_previous.tv_sec;
       delay_usec         = prod_time_1.tv_usec-prod_time_previous.tv_usec;
       execution_times[i] = delay_sec*1000000+delay_usec;
-
+      drifting_times[i]  = execution_times[i] - t->Period;
+      
       //find total time to sleep.
       if(sleep_times[i-1]!=0)usec_to_sleep = t->Period+(t->Period - execution_times[i]);
       else usec_to_sleep = t->Period;
-      
-      printf("thread:%ld, delay_sec: %d,delay_usec: %d, usec_to_sleep: %d\n",t->thread_id,delay_sec,delay_usec,usec_to_sleep);
+
+      //printf("thread:%ld, delay_sec: %d,delay_usec: %d, usec_to_sleep: %d\n",t->thread_id,delay_sec,delay_usec,usec_to_sleep);
 
       //find producer time
       producer_times[i] = 1000000*(prod_time_2.tv_sec - prod_time_producer.tv_sec);
@@ -337,7 +340,12 @@ void *producer(void *args){
 
 //my function for tasks
 void my_function(void *arg){
-  fprintf(stdout,"waiting_time is %d\n",*(int *)arg);
+
+  int temp_1 = *(int *)arg;
+  //fprintf(stdout,"waiting_time is %d\n",*(int *)arg);
+  double temp = (double)temp_1/10;
+  double result = sin(temp);
+  //fprintf(stdout,"temp is %lf and the result is %lf\n",temp,result);
 
   pthread_mutex_lock(&waiting_mutex);
   Waiting_times[Waiting_counter]=*(int *)arg;
