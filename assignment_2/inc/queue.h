@@ -1,8 +1,8 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
-#define QUEUESIZE 2
-#define NUMCONSUMERS 10
+#define QUEUESIZE 3
+#define NUMCONSUMERS 4
 
 //Define work item struct
 typedef struct {

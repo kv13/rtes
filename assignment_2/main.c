@@ -52,9 +52,9 @@ int main(){
     }
 
     //periods in useconds
-    int period = 1000000;
+    //int period = 1000000;
     //int period = 100000;
-    //int period = 10000;
+    int period = 10000;
 
     int TasksToExecute = 3600*(1000000/period);
     //int TasksToExecute = 100;
@@ -137,9 +137,9 @@ int main(){
   printf("total jobs missed:%d\n",Queue->missing_jobs);
 
   //write total waiting times to file
-  char title[150];
-  snprintf(title,sizeof(title),"results/Waiting_Times.txt");
-  writeFile(title,Waiting_times,Waiting_counter);
+  //char title[150];
+  //snprintf(title,sizeof(title),"results/Waiting_Times.txt");
+  //writeFile(title,Waiting_times,Waiting_counter);
 
   //free memory and exit
   queueDelete(Queue);
@@ -243,7 +243,7 @@ void *producer(void *args){
   execution_times  = (int *)malloc(sizeof(int)*t->TasksToExecute);
   drifting_times   = (int *)malloc(sizeof(int)*t->TasksToExecute);
 
-  if(sleep_times == NULL || execution_times == NULL ){
+  if(sleep_times == NULL || execution_times == NULL || producer_times == NULL || drifting_times == NULL ){
     fprintf(stderr,"ERROR: Cannot allocate memory for array...===>EXITING\n");
     exit(1);
   }
@@ -289,7 +289,7 @@ void *producer(void *args){
     if(i==0){
 
       sleep_times[0]= t->Period;
-      execution_times[0] = 0;
+      execution_times[0] = t->Period;
       drifting_times[0]  = 0;
       producer_times[0]  = 1000000*(prod_time_2.tv_sec - prod_time_producer.tv_sec);
       producer_times[0]  = producer_times[0] + prod_time_2.tv_usec - prod_time_producer.tv_usec;
@@ -300,10 +300,10 @@ void *producer(void *args){
       delay_sec          = prod_time_1.tv_sec - prod_time_previous.tv_sec;
       delay_usec         = prod_time_1.tv_usec-prod_time_previous.tv_usec;
       execution_times[i] = delay_sec*1000000+delay_usec;
-      drifting_times[i]  = execution_times[i] - t->Period;
-      
+      drifting_times[i]  = execution_times[i] - sleep_times[i-1];
+
       //find total time to sleep.
-      if(sleep_times[i-1]!=0)usec_to_sleep = t->Period+(t->Period - execution_times[i]);
+      if(sleep_times[i-1]!=0)usec_to_sleep = t->Period-drifting_times[i];
       else usec_to_sleep = t->Period;
 
       //printf("thread:%ld, delay_sec: %d,delay_usec: %d, usec_to_sleep: %d\n",t->thread_id,delay_sec,delay_usec,usec_to_sleep);
@@ -323,16 +323,20 @@ void *producer(void *args){
     prod_time_previous = prod_time_1;
   }
   //WRITE TIMES TO FILES.
-  char title[150];
-  snprintf(title,sizeof(title),"results/Sleep_Times_Period=%d",t->Period);
-  writeFile(title,sleep_times,t->TasksToExecute);
-  snprintf(title,sizeof(title),"results/Execution_Times_Period=%d",t->Period);
-  writeFile(title,execution_times,t->TasksToExecute);
-  snprintf(title,sizeof(title),"results/Producer_Times_Period=%d",t->Period);
-  writeFile(title,producer_times,t->TasksToExecute);
+  //char title[150];
+  //snprintf(title,sizeof(title),"results/Sleep_Times_Period=%d",t->Period);
+  //writeFile(title,sleep_times,t->TasksToExecute);
+  //snprintf(title,sizeof(title),"results/Execution_Times_Period=%d",t->Period);
+  //writeFile(title,execution_times,t->TasksToExecute);
+  //snprintf(title,sizeof(title),"results/Producer_Times_Period=%d",t->Period);
+  //writeFile(title,producer_times,t->TasksToExecute);
+  //snprintf(title,sizeof(title),"results/Drifting_Times_Period=%d",t->Period);
+  //writeFile(title,drifting_times,t->TasksToExecute);
 
   t->StopFcn();
   free(sleep_times);
+  free(producer_times);
+  free(drifting_times);
   free(execution_times);
   free(w);
 }
