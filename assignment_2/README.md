@@ -10,6 +10,6 @@ Since power consumption is key to the implementation of the assignment to run in
 
 **1.** Use the following commands to compile the code in <name of your CPU or write just PC> : gcc -O2 src/timer.c src/queue.c main.c -o <executable_name> -lm -lpthread
 
-**2.** Use the following commands to compile the code for raspberry pi zero (ARM architecture). Download cross compilers from the link(https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/)  Use the command arm-linux-gnueabihf-gcc -g -o <executable_name> src/timer.c src/queue.c main.c -lpthread -lm
+**2.** Use the following commands to compile the code for raspberry pi zero (ARM architecture). Download cross compilers from the link(https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/). Use the command arm-linux-gnueabihf-gcc -g -o <executable_name> src/timer.c src/queue.c main.c -lpthread -lm
 
 **3.** Use the command scp to copy the executable to raspberry pi and then connect to it and run the executable.
